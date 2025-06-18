@@ -136,6 +136,7 @@ def plot_kmeans_single(df):
     """Executa e exibe análise K-Means para um valor de K escolhido."""
     st.subheader("Análise com K-Means")
     k = st.slider("Número de clusters (K)", min_value=2, max_value=10, value=4, key="kmeans_single")
+
     if st.button("Rodar K-Means"):
         features = ['popularity', 'vote_average', 'revenue']
         df_kmeans = df[features].dropna().copy()
@@ -147,7 +148,7 @@ def plot_kmeans_single(df):
 
         st.success("K-Means aplicado com sucesso!")
 
-        # Gráfico: Popularidade média por cluster (Plotly)
+        # Gráfico: Popularidade média por cluster
         st.write("#### Popularidade média por Cluster")
         pop_means = df_kmeans.groupby('cluster')['popularity'].mean()
         fig1 = px.bar(
@@ -160,7 +161,7 @@ def plot_kmeans_single(df):
         fig1.update_yaxes(fixedrange=False)
         st.plotly_chart(fig1, use_container_width=True)
 
-        # Gráfico: Distribuição de gêneros por cluster (Plotly Heatmap)
+        # Gráfico: Distribuição de gêneros por cluster
         st.write("#### Distribuição de Gêneros por Cluster")
         df_with_id = df.copy()
         df_with_id = df_with_id.loc[df_kmeans.index]
@@ -183,9 +184,25 @@ def plot_kmeans_single(df):
             fig2.update_yaxes(fixedrange=False)
             st.plotly_chart(fig2, use_container_width=True)
 
-        # Gráfico: Silhueta (matplotlib)
+        # Gráfico: Silhueta
         st.write("#### Análise de Silhueta")
         plot_silhouette_matplotlib(X_scaled, labels)
+
+        # Gráficos de Caixa por Cluster
+        st.write("#### 📊 Gráficos de Caixa por Cluster")
+        for feature in features:
+            fig_box, ax_box = plt.subplots(figsize=(5, 3), dpi=80)
+            sns.boxplot(x='cluster', y=feature, data=df_kmeans, palette='Set2', ax=ax_box)
+            ax_box.set_title(f'Distribuição de {feature.capitalize()} por Cluster', fontsize=10)
+            ax_box.set_xlabel("Cluster", fontsize=9)
+            ax_box.set_ylabel(feature.capitalize(), fontsize=9)
+            ax_box.tick_params(labelsize=8)
+            ax_box.grid(True, linestyle="--", alpha=0.5)
+            col1, col2, col3 = st.columns([1, 2, 1])  # centralizar
+            with col2:
+                st.pyplot(fig_box)
+
+    
 
 def plot_regression_popularity_rating(df):
     """Regressão linear entre popularidade e média de votos (matplotlib)."""
