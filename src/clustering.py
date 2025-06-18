@@ -187,73 +187,6 @@ def plot_kmeans_single(df):
         st.write("#### Análise de Silhueta")
         plot_silhouette_matplotlib(X_scaled, labels)
 
-def plot_kmeans_comparison(df):
-    """Compara K-Means para múltiplos valores de K."""
-    st.subheader("Comparação de K-Means para múltiplos valores de K")
-    k_values = st.slider("Selecione o valor máximo de K", min_value=2, max_value=10, value=6, key="kmeans_multi")
-    features = ['popularity', 'vote_average', 'revenue']
-    df_kmeans = df[features].dropna().copy()
-    scaler = StandardScaler()
-    X_scaled = scaler.fit_transform(df_kmeans)
-
-    results = []
-    genre_props = {}
-
-    for k in range(2, k_values + 1):
-        kmeans = KMeans(n_clusters=k, random_state=42)
-        labels = kmeans.fit_predict(X_scaled)
-        df_kmeans['cluster'] = labels
-
-        pop_means = df_kmeans.groupby('cluster')['popularity'].mean()
-        pop_mean_overall = pop_means.mean()
-        sil_score = silhouette_score(X_scaled, labels)
-
-        df_with_id = df.copy()
-        df_with_id = df_with_id.loc[df_kmeans.index]
-        df_with_id['cluster'] = labels
-        df_exploded_k = explode_genre_names(df_with_id)
-
-        top_cluster = pop_means.idxmax()
-        if 'genre_names' in df_exploded_k.columns:
-            dist = df_exploded_k[df_exploded_k['cluster'] == top_cluster].groupby('genre_names').size()
-            dist_prop = dist / dist.sum()
-            # Salva como lista de tuplas para garantir exibição correta
-            genre_props[k] = list(dist_prop.sort_values(ascending=False).head(5).items())
-
-        results.append({
-            'K': k,
-            'silhouette': sil_score,
-            'popularity_mean': pop_mean_overall,
-            'top_cluster': top_cluster
-        })
-
-    results_df = pd.DataFrame(results)
-
-    # Gráfico: Silhueta média por K (Plotly)
-    st.write("#### Silhueta média por K")
-    fig1 = px.line(
-        results_df, x='K', y='silhouette', markers=True,
-        title='Silhueta média por K',
-        labels={'K': 'K', 'silhouette': 'Silhueta média'}
-    )
-    fig1.update_layout(dragmode='zoom')
-    fig1.update_xaxes(fixedrange=False)
-    fig1.update_yaxes(fixedrange=False)
-    st.plotly_chart(fig1, use_container_width=True)
-
-    # Gráfico: Popularidade média geral por K (Plotly)
-    st.write("#### Popularidade média geral por K")
-    fig2 = px.line(
-        results_df, x='K', y='popularity_mean', markers=True,
-        title='Popularidade média geral por K',
-        labels={'K': 'K', 'popularity_mean': 'Popularidade média'}
-    )
-    fig2.update_layout(dragmode='zoom')
-    fig2.update_xaxes(fixedrange=False)
-    fig2.update_yaxes(fixedrange=False)
-    st.plotly_chart(fig2, use_container_width=True)
-
-
 def plot_regression_popularity_rating(df):
     """Regressão linear entre popularidade e média de votos (matplotlib)."""
     st.subheader("Regressão Linear: Popularidade vs. Média de Votos (Matplotlib)")
@@ -333,7 +266,6 @@ def run_clustering():
     topics = [
         "Método do Cotovelo",
         "K-Means (1 valor de K)",
-        "Comparação Multi-K",
         "Regressão Linear (Matplotlib)",
         "Regressão Linear (Plotly)"
     ]
@@ -343,8 +275,6 @@ def run_clustering():
         plot_elbow_method(df)
     elif selected_topic == "K-Means (1 valor de K)":
         plot_kmeans_single(df)
-    elif selected_topic == "Comparação Multi-K":
-        plot_kmeans_comparison(df)
     elif selected_topic == "Regressão Linear (Matplotlib)":
         plot_regression_popularity_rating(df)
     elif selected_topic == "Regressão Linear (Plotly)":
