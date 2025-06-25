@@ -1,4 +1,4 @@
-# pip install streamlit pandas scikit-learn seaborn matplotlib numpy plotly statsmodels
+# pip install streamlit pandas scikit-learn seaborn matplotlib numpy plotly statsmodels spicy
 # streamlit run main_streamlit.py
 
 import streamlit as st
@@ -11,7 +11,7 @@ def main():
     st.sidebar.title("Navegação")
     selected_tab = st.sidebar.radio(
         "Escolha uma aba",
-        ["Análises Exploratórias", "Classificação", "Clusterização"]
+        ["Análises Exploratórias", "Regressão", "Clusterização"]
     )
 
     if selected_tab == "Análises Exploratórias":
@@ -26,8 +26,6 @@ def main():
         ]
         selected_subtopic = st.sidebar.radio("Escolha um gráfico:", subtopics)
         run_exploratory_analysis(selected_subtopic)
-    elif selected_tab == "Classificação":
-        run_classification()
     elif selected_tab == "Clusterização":
         run_clustering()
 
